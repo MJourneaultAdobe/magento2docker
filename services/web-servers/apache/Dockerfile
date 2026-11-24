@@ -158,8 +158,7 @@ RUN mkdir -p ${_HOME_DIRECTORY}/.ssh \
     && touch ${_HOME_DIRECTORY}/.ssh/known_hosts \
     && ssh-keygen -F github.com || ssh-keyscan github.com >> ${_HOME_DIRECTORY}/.ssh/known_hosts
 
-COPY ./services/web-servers/apache/etc/git/gitconfig ${_HOME_DIRECTORY}/.gitconfig
-COPY ./services/web-servers/apache/etc/composer/auth.json* ${_HOME_DIRECTORY}/.composer/
+COPY ./services/web-servers/apache/etc/git/gitconfig.example ${_HOME_DIRECTORY}/.gitconfig
 COPY ./services/web-servers/apache/etc/m2install/.m2install.conf* ${_HOME_DIRECTORY}/
 
 # BASH COMPLETION:
@@ -327,4 +326,4 @@ RUN pear install PHP_CodeSniffer \
     && mkdir /usr/local/magento-ecg-code-sniffer \
     && cd /usr/local/magento-ecg-code-sniffer/ && composer require magento-ecg/coding-standard \
     && phpcs --config-set installed_paths /usr/local/magento-ecg-code-sniffer/vendor/magento-ecg/coding-standard
-CMD service ssh start; apache2-foreground
+CMD ["sh", "-c", "project-credentials.sh && service ssh start && exec apache2-foreground"]

@@ -1,8 +1,25 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 
-M2D_SCRIPT_DIRECTORY=$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) || exit 255
+_m2dScriptPath="${BASH_SOURCE[0]}"
+while [[ -L "${_m2dScriptPath}" ]]; do
+    _m2dLink="$(readlink -- "${_m2dScriptPath}")" || exit 255
+    [[ "${_m2dLink}" == /* ]] || _m2dLink="$(dirname -- "${_m2dScriptPath}")/${_m2dLink}"
+    _m2dScriptPath="${_m2dLink}"
+done
+M2D_SCRIPT_DIRECTORY=$(CDPATH='' cd -- "$(dirname -- "${_m2dScriptPath}")" && pwd -P) || exit 255
+unset _m2dScriptPath _m2dLink
 source "$M2D_SCRIPT_DIRECTORY/lib/bootstrap.sh" || exit 255
+
+if [[ $# == 0 || -f "${PWD}/.m2d/settings.json" || "${1:-}" =~ ^[0-9] ||
+      "${1:-}" == up || "${1:-}" == -s || "${1:-}" == --services ||
+      "${1:-}" == -b || "${1:-}" == --build || "${1:-}" == -s* ||
+      "${1:-}" == -h || "${1:-}" == --help ||
+      ( "${1:-}" == setup && ( "${2:-}" == init || "${2:-}" == env ) ) ]]; then
+    source "${M2D_LIBRARIES_ROOT}/projectRuntime.sh" || exit 255
+    projectRuntime::run "$@"
+    exit $?
+fi
 
 help::commerceVersion() {
     echo "

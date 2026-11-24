@@ -2,3 +2,4 @@
 .env.back
 .idea/
 .m2d/
+.worktrees/
