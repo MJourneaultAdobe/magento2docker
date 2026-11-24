@@ -6,7 +6,6 @@ source "$(dirname -- "${BASH_SOURCE[0]}")"/bootstrap.sh || return 255
 [[ -n "${_LIB_COMMANDS_SH:-}" ]] && return "${RC_OK}"
 source "${M2D_LIBRARIES_ROOT}/container.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/env.sh" || return "${RC_ERROR}"
-source "${M2D_LIBRARIES_ROOT}/help.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/setup.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/sync.sh" || return "${RC_ERROR}"
 readonly _LIB_COMMANDS_SH=1
