@@ -1,9 +1,10 @@
 ARG M2D_WEB_SERVER_PHP_VERSION='8.1'
 ARG M2D_ENABLE_BLACKFIRE='no'
 ARG M2D_ENABLE_MAILCATCHER='no'
+ARG M2D_WEB_SERVER_OS='bullseye'
 
 ## BASE PHP IMAGE - COMMON FOR ALL PHP VERSIONS ##
-FROM php:${M2D_WEB_SERVER_PHP_VERSION}-apache-bullseye AS m2d_web_server_apache_php_base
+FROM php:${M2D_WEB_SERVER_PHP_VERSION}-apache-${M2D_WEB_SERVER_OS} AS m2d_web_server_apache_php_base
 
 # SETTING UP THE SYSTEM:
 RUN apt-get update \
@@ -129,7 +130,7 @@ RUN apt-get -y install cmake g++ git
 RUN apt-get -y install libglib2.0-dev zlib1g-dev libpcre3-dev libssl-dev libzstd-dev
 RUN apt-get -y install libmariadb-dev-compat libmariadb-dev
 RUN apt-get -y install pip
-RUN pip install -U sphinx
+RUN pip install --break-system-packages -U sphinx || pip install -U sphinx
 RUN wget -O mydumper.tar.gz https://github.com/mydumper/mydumper/archive/refs/tags/v0.16.1-3.tar.gz && \
     tar xzf mydumper.tar.gz;
 COPY ./services/db-engines/mydumper/CMakeLists.txt mydumper-0.16.1-3/
@@ -306,6 +307,18 @@ FROM m2d_web_server_apache_php8x AS m2d_web_server_apache_php8.3
 RUN docker-php-ext-configure ftp --with-openssl-dir=/usr \
     && docker-php-ext-install ftp
 ## END OF IMAGE ADJUSTMENTS FOR PHP 8.3 ##
+
+## IMAGE ADJUSTEMNTS FOR PHP 8.4 ##
+FROM m2d_web_server_apache_php8x AS m2d_web_server_apache_php8.4
+RUN docker-php-ext-configure ftp --with-openssl-dir=/usr \
+    && docker-php-ext-install ftp
+## END OF IMAGE ADJUSTMENTS FOR PHP 8.4 ##
+
+## IMAGE ADJUSTEMNTS FOR PHP 8.5 ##
+FROM m2d_web_server_apache_php8x AS m2d_web_server_apache_php8.5
+RUN docker-php-ext-configure ftp --with-openssl-dir=/usr \
+    && docker-php-ext-install ftp
+## END OF IMAGE ADJUSTMENTS FOR PHP 8.5 ##
 
 ## TARGET IMAGE ADJUSTEMNTS ##
 FROM m2d_web_server_apache_php${M2D_WEB_SERVER_PHP_VERSION} AS web_server

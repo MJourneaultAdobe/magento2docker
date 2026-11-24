@@ -2,6 +2,7 @@ http.host: 0.0.0.0
 http.port: 9200
 
 indices.query.bool.max_clause_count: 10240
+xpack.security.enabled: false
 
 # Uncomment the following lines for a production cluster deployment
 #transport.host: 0.0.0.0

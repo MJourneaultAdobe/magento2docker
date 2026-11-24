@@ -4,6 +4,39 @@
 M2D_SCRIPT_DIRECTORY=$(CDPATH='' cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P) || exit 255
 source "$M2D_SCRIPT_DIRECTORY/lib/bootstrap.sh" || exit 255
 
+help::commerceVersion() {
+    echo "
+Usage: ./m2d COMMERCE_VERSION [OPTIONS]
+
+Configures and starts the stack of a Commerce version. Service versions are
+resolved from the system requirements matrix and saved to the .env file.
+The web server is always started.
+
+Examples:
+./m2d 2.4.8-p5
+./m2d 248p5 -s mariadb,opensearch,redis,rabbitmq
+./m2d 248p5 -s mysql -s elasticsearch -s valkey
+
+Arguments:
+  COMMERCE_VERSION  Commerce version, e.g. 2.4.8-p5 or 248p5
+
+Options:
+  -h, --help                 Display help for command
+  -s, --services <services>  Comma separated services to start (repeatable).
+                             Replaces the defaults: mariadb,opensearch,redis
+
+Services:
+  mariadb | mysql            DB engine
+  opensearch | elasticsearch Search engine
+  redis | valkey             DB cache (redis falls back to valkey when unsupported)
+  rabbitmq                   Message broker
+  varnish                    Web cache
+  mailcatcher                Mail catcher
+  blackfire                  Blackfire agent
+  selenium                   Selenium
+"
+}
+
 help::enableDisable() {
     local command="$1"
     local Command="${1^}"
@@ -83,10 +116,17 @@ Current containers:
 help::main() {
     echo "
 Usage: ./m2d COMMAND [OPTIONS]
+       ./m2d COMMERCE_VERSION [-s SERVICE[,SERVICE]]...
 
 Examples:
 - initial setup:
 ./m2d setup init
+
+- configure and start Commerce 2.4.8-p5 with mariadb, opensearch and redis:
+./m2d 2.4.8-p5
+
+- configure and start Commerce 2.4.8-p5 with selected services:
+./m2d 248p5 -s mysql,elasticsearch,valkey,rabbitmq
 
 - build and start containers:
 ./m2d up --build
@@ -99,6 +139,7 @@ Options:
   -h, --help Display help for command
 
 Commands:
+  <version> Configure and start a Commerce version (see ./m2d <version> --help)
   build    Build or rebuild containers
   disable  Disable selected service or tool
   down     Stop and remove containers and networks
