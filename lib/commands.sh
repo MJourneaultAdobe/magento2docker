@@ -6,6 +6,7 @@ source "$(dirname -- "${BASH_SOURCE[0]}")"/bootstrap.sh || return 255
 [[ -n "${_LIB_COMMANDS_SH:-}" ]] && return "${RC_OK}"
 source "${M2D_LIBRARIES_ROOT}/container.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/env.sh" || return "${RC_ERROR}"
+source "${M2D_LIBRARIES_ROOT}/services.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/setup.sh" || return "${RC_ERROR}"
 source "${M2D_LIBRARIES_ROOT}/sync.sh" || return "${RC_ERROR}"
 readonly _LIB_COMMANDS_SH=1
@@ -25,11 +26,15 @@ commands::run() {
                     env::setParameter "$envFile" M2D_PROJECT_SUFFIX "${3:-}"
                     ;;
                 'php')
-                    env::setParameter "$envFile" M2D_WEB_SERVER_PHP_VERSION "${3:-}"
+                    env::setParameter "$envFile" M2D_WEB_SERVER_PHP_VERSION "${3:-}" || return "${RC_ERROR}"
+                    env::setParameter "$envFile" M2D_WEB_SERVER_OS "$(services::webServerOs "${3:-}")"
                     ;;
                 'es')
+                    local image
+                    image=$(services::image elasticsearch "${3:-7}") || return "${RC_ERROR}"
                     env::setParameter "$envFile" M2D_SEARCH_ENGINE_VENDOR elasticsearch || return "${RC_ERROR}"
-                    env::setParameter "$envFile" M2D_SEARCH_ENGINE_VERSION "${3:-7}"
+                    env::setParameter "$envFile" M2D_SEARCH_ENGINE_VERSION "${3:-7}" || return "${RC_ERROR}"
+                    env::setParameter "$envFile" M2D_SEARCH_ENGINE_IMAGE "$image"
                     ;;
                 *)
                     env::setParameter "$envFile" "${2:-}" "${3:-}"
@@ -172,6 +177,13 @@ commands::run() {
                     sync::run "${2:-}" "$envFile" "$projectPath"
                     ;;
             esac
+            ;;
+        [0-9]*)
+            if [[ " $* " == *' -h '* || " $* " == *' --help '* ]]; then
+                help::commerceVersion
+            else
+                services::run "$projectPath" "$@"
+            fi
             ;;
         *)
             help::main

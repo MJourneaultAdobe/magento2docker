@@ -34,5 +34,10 @@ env::setParameter() {
         return "${RC_ERROR}"
     fi
 
-    sed -i.back "s|^\\(${parameter}=\\).*|\\1'$value'|" "$envFile" || return "${RC_ERROR}"
+    if grep -q "^${parameter}=" "$envFile"; then
+        sed -i.back "s|^\\(${parameter}=\\).*|\\1'$value'|" "$envFile" || return "${RC_ERROR}"
+    else
+        [[ ! -s "$envFile" || -z "$(tail -c 1 "$envFile")" ]] || echo >> "$envFile" || return "${RC_ERROR}"
+        printf "%s='%s'\n" "$parameter" "$value" >> "$envFile" || return "${RC_ERROR}"
+    fi
 }
